@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaizen Studio — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f4f0;--ink:#0f0f0d;--red:#e0001a;--muted:#6b6762;--border:rgba(15,15,13,0.12);--surface:#fff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+header{background:var(--ink);padding:22px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+.logo-block{display:flex;flex-direction:column;gap:5px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.55rem;color:#fff;font-weight:300;letter-spacing:.22em;line-height:1}
+.logo em{color:var(--red);font-style:normal}
+.logo-tagline{font-size:.52rem;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,0.28)}
+#login-screen{max-width:420px;margin:120px auto;background:var(--surface);border:1px solid var(--border);padding:48px}
+#login-screen h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;margin-bottom:32px}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.field input{width:100%;padding:12px 16px;border:1px solid var(--border);background:var(--bg);font-family:'Syne',sans-serif;font-size:.85rem;color:var(--ink);outline:none}
+.field input:focus{border-color:var(--red)}
+.btn{padding:12px 28px;background:var(--red);color:#fff;border:none;font-family:'Syne',sans-serif;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.btn:hover{background:#ff0020}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--red);color:var(--red);background:transparent}
+.btn-sm{padding:6px 14px;font-size:.58rem}
+.btn-danger{background:#c0002a}
+.btn-danger:hover{background:#e0001a}
+#dashboard{display:none;padding:40px}
+.dash-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;flex-wrap:wrap;gap:16px}
+.dash-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:40px;border:1px solid var(--border)}
+.stat{background:var(--surface);padding:28px 32px}
+.stat-label{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;line-height:1}
+.stat-value.red{color:var(--red)}
+.filters{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:6px 16px;border:1px solid var(--border);background:transparent;font-family:'Syne',sans-serif;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+.filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filter-btn:hover:not(.active){border-color:var(--ink);color:var(--ink)}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border)}
+th{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:14px 20px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:16px 20px;border-bottom:1px solid var(--border);font-size:.82rem;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(15,15,13,0.02)}
+.badge{display:inline-block;padding:3px 10px;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase}
+.badge-new{background:rgba(224,0,26,0.1);color:var(--red)}
+.badge-contacted{background:rgba(15,15,13,0.07);color:var(--ink)}
+.badge-onboarded{background:rgba(0,140,60,0.1);color:#00703c}
+.badge-rejected{background:rgba(80,80,80,0.1);color:#666}
+.badge-dept{background:rgba(201,169,110,0.15);color:#8a6a20}
+.badge-flag{background:rgba(15,15,13,0.06);color:var(--ink)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+select.status-sel{padding:5px 10px;border:1px solid var(--border);background:var(--bg);font-family:'Syne',sans-serif;font-size:.6rem;color:var(--ink);cursor:pointer}
+.empty{text-align:center;padding:60px;color:var(--muted);font-size:.85rem}
+#error-msg{color:var(--red);font-size:.78rem;margin-top:12px}
+.slot-bar{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);padding:16px 24px;margin-bottom:32px}
+.slot-pips{display:flex;gap:3px}
+.slot-pip{width:20px;height:3px;background:rgba(15,15,13,0.1)}
+.slot-pip.taken{background:var(--red)}
+.slot-text{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.slot-text strong{color:var(--ink)}
+.refresh-note{font-size:.62rem;color:var(--muted);margin-left:auto}
+@media(max-width:768px){
+  .stats{grid-template-columns:1fr 1fr}
+  table,thead,tbody,th,td,tr{display:block}
+  thead tr{display:none}
+  td{padding:8px 16px}
+  td::before{content:attr(data-label);display:block;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <span class="logo">KAIZEN <em>·</em> STUDIO INDIA</span>
+    <span class="logo-tagline">Brand Growth Engineering &mdash; Admin Dashboard</span>
+  </div>
+  <button class="btn btn-outline btn-sm" id="logout-btn" style="display:none" onclick="logout()">Logout</button>
+</header>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <h2>Dashboard Login</h2>
+  <div class="field">
+    <label>Admin Key</label>
+    <input type="password" id="admin-key-input" placeholder="Enter your admin key" onkeydown="if(event.key==='Enter')login()">
+  </div>
+  <button class="btn" onclick="login()">Access Dashboard</button>
+  <p id="error-msg"></p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dash-top">
+    <h1 class="dash-title">Applications</h1>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline btn-sm" onclick="loadData()">↻ Refresh</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Slot bar -->
+  <div class="slot-bar">
+    <div class="slot-pips" id="admin-pips"></div>
+    <span class="slot-text" id="admin-slot-text">Loading slots…</span>
+    <span class="refresh-note" id="last-refresh"></span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total Applications</div><div class="stat-value" id="stat-total">—</div></div>
+    <div class="stat"><div class="stat-label">New / Unread</div><div class="stat-value red" id="stat-new">—</div></div>
+    <div class="stat"><div class="stat-label">Onboarded</div><div class="stat-value" id="stat-onboarded">—</div></div>
+    <div class="stat"><div class="stat-label">Slots Remaining</div><div class="stat-value" id="stat-slots">—</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <span style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">Filter:</span>
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('new',this)">New</button>
+    <button class="filter-btn" onclick="setFilter('contacted',this)">Contacted</button>
+    <button class="filter-btn" onclick="setFilter('onboarded',this)">Onboarded</button>
+    <button class="filter-btn" onclick="setFilter('rejected',this)">Rejected</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Company</th>
+        <th>Phone</th>
+        <th>Service</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="app-tbody">
+      <tr><td colspan="7" class="empty">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Change this to your deployed server URL
+const API_BASE = 'http://localhost:3000';
+
+let adminKey = '';
+let allApps  = [];
+let currentFilter = 'all';
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function login(){
+  const key = document.getElementById('admin-key-input').value.trim();
+  if(!key){ document.getElementById('error-msg').textContent = 'Please enter an admin key.'; return; }
+  // Test the key by fetching applications
+  const res = await fetch(API_BASE+'/api/applications', { headers:{'x-admin-key': key} }).catch(()=>null);
+  if(!res || !res.ok){
+    document.getElementById('error-msg').textContent = res ? 'Invalid admin key.' : 'Cannot reach server. Is it running?';
+    return;
+  }
+  adminKey = key;
+  sessionStorage.setItem('kz_admin', key);
+  showDashboard(await res.json());
+}
+
+function logout(){
+  sessionStorage.removeItem('kz_admin');
+  adminKey = '';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('logout-btn').style.display = 'none';
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function showDashboard(data){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('logout-btn').style.display = 'inline-block';
+  allApps = data.applications || [];
+  renderApps();
+  updateStats();
+  loadSlots();
+  document.getElementById('last-refresh').textContent = 'Last refreshed: '+new Date().toLocaleTimeString();
+}
+
+async function loadData(){
+  const res = await fetch(API_BASE+'/api/applications', { headers:{'x-admin-key': adminKey} }).catch(()=>null);
+  if(!res || !res.ok){ alert('Failed to refresh.'); return; }
+  const data = await res.json();
+  allApps = data.applications || [];
+  renderApps();
+  updateStats();
+  loadSlots();
+  document.getElementById('last-refresh').textContent = 'Last refreshed: '+new Date().toLocaleTimeString();
+}
+
+async function loadSlots(){
+  const res = await fetch(API_BASE+'/api/slots').catch(()=>null);
+  if(!res || !res.ok) return;
+  const d = await res.json();
+  // pips
+  const pipsEl = document.getElementById('admin-pips');
+  let h='';
+  for(let i=0;i<d.total;i++) h+=`<div class="slot-pip${i<d.taken?' taken':''}"></div>`;
+  pipsEl.innerHTML = h;
+  document.getElementById('admin-slot-text').innerHTML = `<strong>${d.taken}</strong> of <strong>${d.total}</strong> slots taken this month &mdash; <strong>${d.remaining}</strong> remaining`;
+  document.getElementById('stat-slots').textContent = d.remaining;
+}
+
+function updateStats(){
+  document.getElementById('stat-total').textContent     = allApps.length;
+  document.getElementById('stat-new').textContent       = allApps.filter(a=>a.status==='new').length;
+  document.getElementById('stat-onboarded').textContent = allApps.filter(a=>a.status==='onboarded').length;
+}
+
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderApps();
+}
+
+function renderApps(){
+  const filtered = currentFilter === 'all' ? allApps : allApps.filter(a=>a.status===currentFilter);
+  // Sort newest first
+  filtered.sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt));
+  const tbody = document.getElementById('app-tbody');
+  if(filtered.length === 0){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No applications found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(app => {
+    const date   = new Date(app.submittedAt).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const svc    = app.selectedType === 'flag'
+      ? `<span class="badge badge-flag">${app.flagPackage}</span><br><small style="color:var(--muted);font-size:.7rem">${app.flagPrice}</small>`
+      : `<span class="badge badge-dept">${app.department?.toUpperCase()}</span><br><small style="color:var(--muted);font-size:.7rem">${(app.services||[]).join(', ')||'—'}</small>`;
+    const notes  = app.needs ? `<br><small style="color:var(--muted);font-size:.7rem;display:block;margin-top:6px">"${app.needs.slice(0,80)}${app.needs.length>80?'…':''}"</small>` : '';
+    return `<tr>
+      <td data-label="Date">${date}</td>
+      <td data-label="Name"><strong>${esc(app.name)}</strong>${notes}</td>
+      <td data-label="Company">${esc(app.company)}</td>
+      <td data-label="Phone"><a href="https://wa.me/91${app.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--red);text-decoration:none">${esc(app.phone)}</a></td>
+      <td data-label="Service">${svc}</td>
+      <td data-label="Status"><span class="badge badge-${app.status}">${app.status}</span></td>
+      <td data-label="Actions">
+        <div class="actions">
+          <select class="status-sel" onchange="updateStatus('${app.id}',this.value)">
+            <option value="">Change status…</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="onboarded">Onboarded</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="deleteApp('${app.id}','${esc(app.company)}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function updateStatus(id, status){
+  if(!status) return;
+  const res = await fetch(`${API_BASE}/api/applications/${id}/status`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json','x-admin-key':adminKey},
+    body: JSON.stringify({status})
+  }).catch(()=>null);
+  if(!res || !res.ok){ alert('Failed to update status.'); return; }
+  const app_ = allApps.find(a=>a.id===id);
+  if(app_) app_.status = status;
+  renderApps();
+  updateStats();
+}
+
+async function deleteApp(id, company){
+  if(!confirm(`Delete application from "${company}"? This cannot be undone.`)) return;
+  const res = await fetch(`${API_BASE}/api/applications/${id}`, {
+    method:'DELETE',
+    headers:{'x-admin-key':adminKey}
+  }).catch(()=>null);
+  if(!res || !res.ok){ alert('Failed to delete.'); return; }
+  allApps = allApps.filter(a=>a.id!==id);
+  renderApps();
+  updateStats();
+}
+
+function exportCSV(){
+  if(!allApps.length){ alert('No applications to export.'); return; }
+  const headers = ['Date','Name','Company','Phone','Type','Department / Package','Services','Price','Notes','Status'];
+  const rows = allApps.map(a=>[
+    a.submittedAt,
+    a.name, a.company, a.phone,
+    a.selectedType,
+    a.selectedType==='flag' ? a.flagPackage : a.department,
+    (a.services||[]).join(' | '),
+    a.flagPrice||'',
+    (a.needs||'').replace(/,/g,';'),
+    a.status,
+  ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kaizen-applications-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── Auto-login from session ───────────────────────────────────────────────────
+const saved = sessionStorage.getItem('kz_admin');
+if(saved){
+  document.getElementById('admin-key-input').value = saved;
+  login();
+}
+</script>
+</body>
+</html>
