@@ -1,0 +1,7 @@
+PORT=3000
+TOTAL_SLOTS=20
+ADMIN_KEY=choose-any-strong-password
+EMAIL_SERVICE=gmail
+EMAIL_USER=buildwithfbs@gmail.com
+EMAIL_PASS=gwrnzqocuhvx
+OWNER_EMAIL=ganeshhariharan.s8@gmail.com
