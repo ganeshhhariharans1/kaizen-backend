@@ -1,7 +1,0 @@
-PORT=3000
-TOTAL_SLOTS=20
-ADMIN_KEY=Kaizen@2025!
-EMAIL_SERVICE=gmail
-EMAIL_USER=buildwithfbs@gmail.com
-EMAIL_PASS=gwrnzqocuhvx
-OWNER_EMAIL=buildwithfbs@gmail.com
